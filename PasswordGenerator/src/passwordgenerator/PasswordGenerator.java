@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,29 +27,36 @@ public class PasswordGenerator {
     // Array for characters to use
     static char[] characters = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
                         'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                        'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
-                        'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-                        'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3',
-                        '4', '5', '6', '7', '8', '9', '0', '-', '=', '!', '@',
-                        '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '`',
-                        '~', ',', '.', '/', ';', '\'', '[', ']', '\\', '<',
-                        '>', '?', ':', '\"', '{', '}', '|', ' ' };
+                        'w', 'x', 'y', 'z' };
     
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        for (int i = 0; i < 10; i ++) {
-            for (int j = 0; j < 10; j++) {
-                System.out.println(generatePassword(i));
+        String[][] passwords = new String[2][900];
+        
+        // Generate the passwords and enter 
+        for (int i = 2; i < 11; i++) {
+            for (int j = 0; j < 100; j++) {
+                String pass = generatePassword(i);
+                
+                // Skip this iteration of the password was already generated before
+                if (Arrays.asList(passwords[0]).contains(pass)) {
+                    j--;
+                    continue;
+                }
+                
+                passwords[0][(i-2)*100+j] = pass;
+                String hash = "";
+                try {
+                    hash = hashString(pass, SHA_256);
+                } catch (NoSuchAlgorithmException|UnsupportedEncodingException ex) {
+                    Logger.getLogger(PasswordGenerator.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                passwords[1][(i-2)*100+j] = hash;
+                System.out.println("j: " + ((i-2)*100+j) + " Password: " + passwords[0][(i-2)*100+j] + " Hash: " + passwords[1][(i-2)*100+j]);
             }
         }
-        
-        /*try {
-            hashString(SHA_256);
-        } catch (NoSuchAlgorithmException|UnsupportedEncodingException ex) {
-            Logger.getLogger(PasswordGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        }*/
         
         /*try {
             store();
@@ -69,14 +77,20 @@ public class PasswordGenerator {
         return sb.toString();
     }
     
+    // Hash the password using the specified algorithm
     private static String hashString(String string, String hashAlgorithm) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        // Hash the password using the specified algorithm
         MessageDigest md = MessageDigest.getInstance(hashAlgorithm);
-        String text = "This is some text";
 
-        md.update(text.getBytes("UTF-8")); // Change this to "UTF-16" if needed
+        md.update(string.getBytes("UTF-8")); // Change this to "UTF-16" if needed
         byte[] digest = md.digest();
-        return digest.toString();
+        
+        //convert the byte to hex format method
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < digest.length; i++) {
+            sb.append(Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1));
+        }
+        
+        return sb.toString();
     }
     
     /*private static void store()
