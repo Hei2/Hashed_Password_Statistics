@@ -29,40 +29,53 @@ public class PasswordGenerator {
                         'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
                         'w', 'x', 'y', 'z' };
     
+    // The number of string of a specified length to create
+    static int numberOfStrings = 10;
+    // The number of different string lengths to create
+    static int numberOfStringLengths = 10;
+    // The starting string length
+    static int startingStringLength = 2;
+    
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        String[][] passwords = new String[2][900];
+        // Strings that have been generated
+        String[] passwords = new String[numberOfStrings * numberOfStringLengths];
+        // The bytes that represent each character in the password strings
+        byte[][] passwordBytes = new byte[passwords.length][];
+        // The bytes that represent each "character" in the hashed strings
+        byte[][] hashedPasswordBytes = new byte[passwordBytes.length][];
         
-        // Generate the passwords and enter 
-        for (int i = 2; i < 11; i++) {
-            for (int j = 0; j < 100; j++) {
-                String pass = generatePassword(i);
+        for (int length = startingStringLength; length < startingStringLength + numberOfStringLengths; length++) {
+            for (int amount = 0; amount < numberOfStrings; amount++) {
+                String password = generatePassword(length);
                 
                 // Skip this iteration of the password was already generated before
-                if (Arrays.asList(passwords[0]).contains(pass)) {
-                    j--;
+                if (Arrays.asList(passwords).contains(password)) {
+                    amount--;
                     continue;
                 }
                 
-                passwords[0][(i-2)*100+j] = pass;
-                String hash = "";
+                passwords[(length - startingStringLength) * numberOfStringLengths + amount] = password;
+                
+                // Create the byte array to hold the password's characters as bytes
+                passwordBytes[(length - startingStringLength) * numberOfStringLengths + amount] = new byte[password.length()];
+                
+                // Populate the password byte array
+                for (int i = 0; i < password.length(); i++) {
+                    passwordBytes[(length - startingStringLength) * numberOfStringLengths + amount][i] = password.substring(i, i+1).getBytes()[0];
+                }
+                
                 try {
-                    hash = hashString(pass, SHA_256);
+                    hashedPasswordBytes[(length - startingStringLength) * numberOfStringLengths + amount] = hashString(password, SHA_256);
                 } catch (NoSuchAlgorithmException|UnsupportedEncodingException ex) {
                     Logger.getLogger(PasswordGenerator.class.getName()).log(Level.SEVERE, null, ex);
+                    amount--;
+                    continue;
                 }
-                passwords[1][(i-2)*100+j] = hash;
-                System.out.println("j: " + ((i-2)*100+j) + " Password: " + passwords[0][(i-2)*100+j] + " Hash: " + passwords[1][(i-2)*100+j]);
             }
         }
-        
-        /*try {
-            store();
-        } catch (ClassNotFoundException|SQLException ex) {
-            Logger.getLogger(PasswordGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        }*/
     }
     
     // Generate a random password of a specified length
@@ -78,19 +91,13 @@ public class PasswordGenerator {
     }
     
     // Hash the password using the specified algorithm
-    private static String hashString(String string, String hashAlgorithm) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+    private static byte[] hashString(String string, String hashAlgorithm) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         MessageDigest md = MessageDigest.getInstance(hashAlgorithm);
 
         md.update(string.getBytes("UTF-8")); // Change this to "UTF-16" if needed
         byte[] digest = md.digest();
         
-        //convert the byte to hex format method
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < digest.length; i++) {
-            sb.append(Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1));
-        }
-        
-        return sb.toString();
+        return digest;
     }
     
     /*private static void store()
