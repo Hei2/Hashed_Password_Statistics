@@ -71,8 +71,8 @@ public class PasswordGenerator {
                     continue;
                 }
                 
-                System.out.print("\n" + (length - startingStringLength) * numberOfStringLengths +
-                        amount + " " + password + " Length: " + password.length());
+                System.out.print("\n" + ((length - startingStringLength) * numberOfStringLengths +
+                        amount) + "\t" + password + "\t" + password.length());
                 ArrayList<Byte> chars = new ArrayList<>();
                 for (int i = 0; i  < password.length(); i++) {
                     // Add the current character to the byte array if it's not already there
@@ -98,7 +98,7 @@ public class PasswordGenerator {
                     
                     chars.add(password.substring(i, i+1).getBytes()[0]);
                     
-                    System.out.print("\t " + password.substring(i, i+1) + " " + occursInPass + " " + occursInHash);
+                    System.out.print("\t" + password.substring(i, i+1) + " " + occursInPass + " " + occursInHash);
                 }
             }
         }
