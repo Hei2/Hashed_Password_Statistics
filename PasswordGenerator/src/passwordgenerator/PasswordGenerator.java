@@ -7,10 +7,7 @@ package passwordgenerator;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,9 +22,8 @@ public class PasswordGenerator {
     private static final String SHA_256 = "SHA-256";
     
     // Array for characters to use
-    static char[] characters = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
-                        'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                        'w', 'x', 'y', 'z' };
+    static char[] characters = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
+                                '9'};
     
     // The number of string of a specified length to create
     static int numberOfStrings = 10;
@@ -74,6 +70,36 @@ public class PasswordGenerator {
                     amount--;
                     continue;
                 }
+                
+                System.out.print("\n" + (length - startingStringLength) * numberOfStringLengths +
+                        amount + " " + password + " Length: " + password.length());
+                ArrayList<Byte> chars = new ArrayList<>();
+                for (int i = 0; i  < password.length(); i++) {
+                    // Add the current character to the byte array if it's not already there
+                    if (chars.contains(password.substring(i, i+1).getBytes()[0])) {
+                        continue;
+                    }
+                    
+                    // Count the number of times the characters occurs in the original password
+                    int occursInPass = 0;
+                    for (int j = 0; j < password.length(); j++) {
+                        if (password.substring(i, i+1).equals(password.substring(j, j+1))) {
+                            occursInPass++;
+                        }
+                    }
+                    
+                    // Count the number of times the character's byte occurs in the hashed password
+                    int occursInHash = 0;
+                    for (int j = 0; j < hashedPasswordBytes[(length - startingStringLength) * numberOfStringLengths + amount].length; j++) {
+                        if (password.substring(i, i+1).getBytes()[0] == hashedPasswordBytes[(length - startingStringLength) * numberOfStringLengths + amount][j]) {
+                            occursInHash++;
+                        }
+                    }
+                    
+                    chars.add(password.substring(i, i+1).getBytes()[0]);
+                    
+                    System.out.print("\t " + password.substring(i, i+1) + " " + occursInPass + " " + occursInHash);
+                }
             }
         }
     }
@@ -99,23 +125,4 @@ public class PasswordGenerator {
         
         return digest;
     }
-    
-    /*private static void store()
-            throws ClassNotFoundException, SQLException {
-        //Load the driver.
-        Class.forName("com.mysql.jdbc.Driver");
-
-        //Create a connection.
-        Connection conn = DriverManager.getConnection("jdbc:mysql://" + url + "/databaseName", user, pass);
-
-        //Create a statement object to use.
-        Statement stmt = conn.createStatement();
-
-        //Begin creating tables.
-        String create = "CREATE TABLE IF NOT EXISTS PASSWORDS (password VARCHAR(10) NOT NULL, " +
-                        "hashedPassword VARCHAR(256) NOT NULL, " +
-                        "hashingAlgorithm VARCHAR(10) NOT NULL, " +
-                        "PRIMARY KEY (password, hashingAlgorithm))";
-        stmt.executeUpdate(create);
-    }*/
 }
