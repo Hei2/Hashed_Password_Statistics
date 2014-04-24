@@ -25,6 +25,11 @@ public class PasswordGenerator {
     static char[] characters = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
                                 '9'};
     
+    static char[] strongCharacters = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+                                        'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+                                        'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
+                                        'y', 'z' };
+    
     // The number of string of a specified length to create
     static int numberOfStrings = 10;
     // The number of different string lengths to create
@@ -42,10 +47,18 @@ public class PasswordGenerator {
         byte[][] passwordBytes = new byte[passwords.length][];
         // The bytes that represent each "character" in the hashed strings
         byte[][] hashedPasswordBytes = new byte[passwordBytes.length][];
+        boolean strong = false;
         
         for (int length = startingStringLength; length < startingStringLength + numberOfStringLengths; length++) {
             for (int amount = 0; amount < numberOfStrings; amount++) {
-                String password = generatePassword(length);
+                String password = "";
+                if (amount == 0) {
+                    strong = false;
+                }
+                else if (amount > (numberOfStrings / 2)) {
+                    strong = true;
+                }
+                password = generatePassword(length, strong);
                 
                 // Skip this iteration of the password was already generated before
                 if (Arrays.asList(passwords).contains(password)) {
@@ -73,6 +86,7 @@ public class PasswordGenerator {
                 
                 System.out.print("\n" + ((length - startingStringLength) * numberOfStringLengths +
                         amount) + "\t" + password + "\t" + password.length());
+                
                 ArrayList<Byte> chars = new ArrayList<>();
                 for (int i = 0; i  < password.length(); i++) {
                     // Add the current character to the byte array if it's not already there
@@ -98,19 +112,28 @@ public class PasswordGenerator {
                     
                     chars.add(password.substring(i, i+1).getBytes()[0]);
                     
-                    System.out.print("\t" + password.substring(i, i+1) + " " + occursInPass + " " + occursInHash);
+                    // Print out the character being counted, (the int value of the character),
+                    // the number of times it occurs in the password, and the number of times
+                    // it occurs in the hashed password
+                    System.out.print("\t" + password.substring(i, i+1) + " (" + (int)(password.substring(i, i+1).getBytes()[0]) + ") " + occursInPass + " " + occursInHash);
                 }
             }
         }
     }
     
     // Generate a random password of a specified length
-    private static String generatePassword(int length) {
+    private static String generatePassword(int length, boolean strong) {
         StringBuilder sb = new StringBuilder();
         
         for (int i = 0; i < length; i++) {
-            int rand = 0 + (int)(Math.random() * (((characters.length - 1) - 0) + 1));
-            sb.append(characters[rand]);
+            int rand;
+            if (strong && (i % 2) == 0) {
+                rand = 0 + (int)(Math.random() * (((strongCharacters.length - 1) - 0) + 1));
+                sb.append(strongCharacters[rand]);
+            } else {
+                rand = 0 + (int)(Math.random() * (((characters.length - 1) - 0) + 1));
+                sb.append(characters[rand]);
+            }
         }
         
         return sb.toString();
