@@ -55,7 +55,7 @@ public class PasswordGenerator {
                 if (amount == 0) {
                     strong = false;
                 }
-                else if (amount > (numberOfStrings / 2)) {
+                else if (amount >= (numberOfStrings / 2)) {
                     strong = true;
                 }
                 password = generatePassword(length, strong);
@@ -86,6 +86,12 @@ public class PasswordGenerator {
                 
                 System.out.print("\n" + ((length - startingStringLength) * numberOfStringLengths +
                         amount) + "\t" + password + "\t" + password.length());
+                
+                if (strong) {
+                    System.out.print("\t STRONG");
+                } else {
+                    System.out.print("\t WEAK");
+                }
                 
                 ArrayList<Byte> chars = new ArrayList<>();
                 for (int i = 0; i  < password.length(); i++) {
